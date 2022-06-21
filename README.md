@@ -12,7 +12,7 @@ A development test for dacxi with two endpoints:
 
 ## Installation
 
-Clone this project on your local enviroment
+Clone this project on your local environment
 
 run
 
