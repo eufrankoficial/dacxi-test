@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Requests\EstimatedPriceRequest;
 use App\Services\CoinService;
 use App\Repository\CoinRepository;
 use App\DTOs\CoinDto;
 use App\Http\Resources\CoinCollection;
+use App\Http\Resources\ErrorResource;
 use App\Http\Resources\EstimatedPriceResource;
+use Exception;
+use Spatie\FlareClient\Http\Exceptions\NotFound;
 
 class CoinController extends Controller
 {
@@ -30,29 +32,49 @@ class CoinController extends Controller
 
     function getCoinPrice(string $coin = 'bitcoin')
     {
-        return CoinCollection::make(
-            $this->coinRepository->save(
-                COinDto::coinLastPriceDTO(
-                    $this->coinService->getLastCoinPrice($coin, $this->currency)
-                ),
-                $this->coinRepository->find(
-                    [
-                        ['slug', '=', $coin]
-                    ],
-                    ['prices', 'lastPrice'],
-                    true
+        try {
+            $findedCoin = $this->coinService->getLastCoinPrice($coin, $this->currency);
+            if (count(reset($findedCoin)) === 0) {
+                throw new NotFound('Coin not found');
+            }
+            return CoinCollection::make(
+                $this->coinRepository->save(
+                    COinDto::coinLastPriceDTO(
+                        $findedCoin
+                    ),
+                    $this->coinRepository->find(
+                        [
+                            ['slug', '=', $coin]
+                        ],
+                        ['prices', 'lastPrice'],
+                        true
+                    )
                 )
-            )
-        );
+            );
+        } catch (\Exception $e) {
+            return ErrorResource::make(
+                collect([
+                    'error' => $e->getMessage()
+                ])
+            );
+        }
     }
 
     function estimatedPrice(EstimatedPriceRequest $request, string $coin)
     {
-        return EstimatedPriceResource::make(
-            $this->coinRepository->getEstimatedPrice(
-                $coin,
-                CoinDto::estimatedPriceFilterDTO($request)
-            )
-        );
+        try {
+            return EstimatedPriceResource::make(
+                $this->coinRepository->getEstimatedPrice(
+                    $coin,
+                    CoinDto::estimatedPriceFilterDTO($request)
+                )
+            );
+        } catch (\Exception $e) {
+            return ErrorResource::make(
+                collect([
+                    'error' => $e->getMessage()
+                ])
+            );
+        }
     }
 }

@@ -15,7 +15,7 @@ class CoinRepository implements RepositoryInterface
         $this->model = $model;
     }
 
-    function save(array $data = [], $model = null): Coin
+    function save(array $data = [], $model = null): ?Coin
     {
         if ($model != null) {
             $coin = $model->update($data['coin']);
