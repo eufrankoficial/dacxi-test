@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      args:
+        - "UID=$UID"
+        - "GID=$GID"
+        - "USER=$USER"
+      context: ./
+    image: dacxi-teste
+    container_name: dacxi-teste
+    restart: unless-stopped
+    working_dir: /var/www/html
+    ports:
+        - '8000:8000'
+    volumes:
+        - ./:/var/www/html
+
+
+  apache:
+    container_name: apache
+    image: httpd:latest
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./website:/usr/local/apache2/htdocs
+
+  php:
+    image: php:8.0.5-fpm-alpine
+    build:
+      context: ./
+      args:
+        - "UID=$UID"
+        - "GID=$GID"
+        - "USER=$USER"
+    volumes:
+      - ".:/var/www/html"
+      - "./docker/php/config/php.ini:/usr/local/etc/php/php.ini"
+    environment:
+      PATH: "/root/.composer/vendor/bin:${PATH}"
+
+  database:
+    container_name: mysql_database
+    image: mysql:8
+    restart: unless-stopped
+    command: mysqld --max_allowed_packet=16M
+    ports:
+      - '5432:5432'
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=F8jk29034524
+
+
+volumes:
+  data:
+  mysql-data:
