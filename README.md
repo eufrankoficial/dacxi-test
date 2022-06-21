@@ -51,7 +51,7 @@ $ ./vendor/bin/sail artisan migrate
 
 Access your http://localhost
 
-You can access the endpoint by postman or your prefered API CLIENT
+You can access the endpoint by postman or your preferred API CLIENT
 
 ## Available endpoints
 
